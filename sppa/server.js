@@ -1,0 +1,24 @@
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const dotenv = require('dotenv');
+const sppaRoutes = require("./routes/authRoutes");
+const markRoutes = require("./routes/markRoutes");
+
+dotenv.config();
+const app = express();
+
+app.use(cors());
+app.use(express.json());
+
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log("MongoDB Connected"))
+  .catch(err => console.log(err));
+
+app.use("/sppa", sppaRoutes);
+app.use("/sppa/marks", markRoutes);
+
+const PORT = 5000;
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on port ${PORT}`);
+});
