@@ -5,6 +5,8 @@ const dotenv = require('dotenv');
 const sppaRoutes = require("./routes/authRoutes");
 const markRoutes = require("./routes/markRoutes");
 
+const markRoute = require("./routes/mark");
+
 dotenv.config();
 const app = express();
 
@@ -17,6 +19,7 @@ mongoose.connect(process.env.MONGO_URI)
 
 app.use("/sppa", sppaRoutes);
 app.use("/sppa/marks", markRoutes);
+app.use("/sppa/mark", markRoute);
 
 const PORT = 5000;
 app.listen(PORT, '0.0.0.0', () => {
