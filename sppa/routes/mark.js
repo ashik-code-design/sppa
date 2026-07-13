@@ -3,7 +3,7 @@ const router = express.Router();
 
 const Mark = require("../models/Mark");
 
-router.post("mark/", async (req, res) => {
+router.post("/", async (req, res) => {
   try {
     const marks = req.body.marks;
 
