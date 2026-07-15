@@ -33,6 +33,25 @@ const markSchema = new mongoose.Schema({
     type: Number,
     default: 0
   }
-}, { timestamps: { createdAt: "created_at", updatedAt: false } });
+}, {
+  timestamps: {
+    createdAt: "created_at",
+    updatedAt: false
+  }
+});
+
+// ADD THIS
+markSchema.index(
+  {
+    register_number: 1,
+    department: 1,
+    section: 1,
+    lab: 1,
+    experiment: 1
+  },
+  {
+    unique: true
+  }
+);
 
 module.exports = mongoose.model("Mark", markSchema);
