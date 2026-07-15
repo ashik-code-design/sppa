@@ -59,14 +59,12 @@ router.post("/login", async (req, res) => {
   try {
     const { staffId, password } = req.body;
 
-    if (!staffId || !password) {
-      return res.json({
-        status: "error",
-        message: "Staff ID and Password are required"
-      });
-    }
+    console.log("Staff ID:", staffId);
+    console.log("Password:", password);
 
     const user = await Staff.findOne({ staff_id: staffId });
+
+    console.log("User Found:", user);
 
     if (!user) {
       return res.json({
@@ -75,8 +73,11 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    // Compare password
+    console.log("Stored Password:", user.password);
+
     const isMatch = await bcrypt.compare(password, user.password);
+
+    console.log("Password Match:", isMatch);
 
     if (!isMatch) {
       return res.json({
@@ -85,23 +86,17 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    return res.json({
+    res.json({
       status: "success",
-      message: "Login Successful",
-      password_changed: user.password_changed,
-      staff: {
-        id: user._id,
-        staff_id: user.staff_id
-      }
+      message: "Login Successful"
     });
 
-  } catch (error) {
-    console.error(error);
+  } catch (err) {
+    console.log(err);
     res.json({
       status: "error",
-      message: "Server error"
+      message: "Server Error"
     });
   }
 });
-
-module.exports = router;
+module.exports = router;= router;
