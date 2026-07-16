@@ -32,15 +32,11 @@ const markSchema = new mongoose.Schema({
   total: {
     type: Number,
     default: 0
+  },
+  staff_id: {
+    type: String
   }
-}, {
-  timestamps: {
-    createdAt: "created_at",
-    updatedAt: false
-  }
-});
-
-// ADD THIS
+}, { timestamps: { createdAt: "created_at", updatedAt: false } });
 markSchema.index(
   {
     register_number: 1,
@@ -49,9 +45,8 @@ markSchema.index(
     lab: 1,
     experiment: 1
   },
-  {
-    unique: true
-  }
+  { unique: true }
 );
+
 
 module.exports = mongoose.model("Mark", markSchema);
