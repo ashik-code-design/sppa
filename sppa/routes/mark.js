@@ -41,8 +41,7 @@ router.post("/", async (req, res) => {
     const count = await Mark.countDocuments();
     console.log("Total Documents:", count);
 
-    const count = await Mark.countDocuments();
-    console.log("Total Documents:", count);
+    
 
     res.json({
       status: "success",
