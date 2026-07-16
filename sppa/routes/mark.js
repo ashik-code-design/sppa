@@ -15,7 +15,28 @@ router.post("/", async (req, res) => {
       });
     }
 
-    const result = await Mark.insertMany(marks);
+    for (const mark of marks) {
+  await Mark.findOneAndUpdate(
+    {
+      register_number: mark.register_number,
+      department: mark.department,
+      section: mark.section,
+      lab: mark.lab,
+      experiment: mark.experiment
+    },
+    {
+      $set: {
+        preparation: mark.preparation,
+        output: mark.output,
+        total: mark.total
+      }
+    },
+    {
+      upsert: true,
+      new: true
+    }
+  );
+}
 
     console.log("Inserted:", result);
 
