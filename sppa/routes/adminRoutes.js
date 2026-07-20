@@ -198,5 +198,51 @@ router.delete("/deleteStaff/:id", async (req, res) => {
     }
 
 });
+// ================= UPDATE STAFF =================
+router.put("/updateStaff/:id", async (req, res) => {
+
+    try {
+
+        const { staffId } = req.body;
+
+        if (!staffId) {
+            return res.json({
+                status: "error",
+                message: "Staff ID is required"
+            });
+        }
+
+        const exist = await Staff.findOne({
+            staff_id: staffId
+        });
+
+        if (exist) {
+            return res.json({
+                status: "error",
+                message: "Staff ID already exists"
+            });
+        }
+
+        await Staff.findByIdAndUpdate(req.params.id, {
+            staff_id: staffId
+        });
+
+        res.json({
+            status: "success",
+            message: "Staff Updated Successfully"
+        });
+
+    } catch (err) {
+
+        console.log(err);
+
+        res.json({
+            status: "error",
+            message: "Server Error"
+        });
+
+    }
+
+});
 
 module.exports = router;
