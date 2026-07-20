@@ -17,6 +17,7 @@ mongoose.connect(process.env.MONGO_URI)
         "16FCS01",
         "17FCS01",
         "21FCS01",
+        "23FCS01",
         "23FCS02",
         "24FCS01",
         "24FCS02",
