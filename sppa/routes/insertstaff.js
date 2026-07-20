@@ -12,21 +12,21 @@ mongoose.connect(process.env.MONGO_URI)
     console.log("MongoDB Connected");
 
     const ids = [
-        "ST001",
-        "ST002",
-        "ST003",
-        "ST004",
-        "ST005",
-        "ST006",
-        "ST007",
-        "ST008",
-        "ST009",
-        "ST010",
-        "ST011",
-        "ST012"
+        "12FCS01",
+        "12FCS02",
+        "16FCS01",
+        "17FCS01",
+        "21FCS01",
+        "23FCS02",
+        "24FCS01",
+        "24FCS02",
+        "24FCS03",
+        "25FCS01",
+        "10TCS03",
+        "26SCS01"
     ];
 
-    const hash = await bcrypt.hash("147852", 10);
+    const hash = await bcrypt.hash("12345678", 20);
 
     for (const id of ids) {
 
