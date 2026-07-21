@@ -11,6 +11,7 @@ const forgetRoute = require("./routes/forget");
 const adminRoutes=require("./routes/adminRoutes");
 
 dotenv.config();
+console.log("MONGO_URI:", process.env.MONGO_URI);
 const app = express();
 
 app.use(cors());
