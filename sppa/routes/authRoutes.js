@@ -72,7 +72,7 @@ router.post("/login", async (req, res) => {
         message: "Invalid Staff ID or Password"
       });
     }
-
+    console.log("Entered Password:", password);
     console.log("Stored Password:", user.password);
 
     const isMatch = await bcrypt.compare(password, user.password);
