@@ -75,7 +75,22 @@ router.post("/login", async (req, res) => {
     console.log("Entered Password:", password);
     console.log("Stored Password:", user.password);
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    console.log("Before compare");
+
+let isMatch;
+
+try {
+  isMatch = await bcrypt.compare(password, user.password);
+  console.log("After compare");
+  console.log("Password Match:", isMatch);
+} catch (e) {
+  console.error("Compare Error:", e);
+  return res.status(500).json({
+    status: "error",
+    message: "Compare failed",
+    error: e.message,
+  });
+}
 
     console.log("Password Match:", isMatch);
 
