@@ -27,7 +27,7 @@ mongoose.connect(process.env.MONGO_URI)
         "26SCS01"
     ];
 
-    const hash = await bcrypt.hash("12345678", 20);
+    const hash = await bcrypt.hash("12345678", 10);
 
     for (const id of ids) {
 
