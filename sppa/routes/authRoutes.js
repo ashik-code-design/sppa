@@ -73,10 +73,13 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    console.time("Compare Password");
-    const isMatch = await bcrypt.compare(password, user.password);
-    console.timeEnd("Compare Password");
+    console.log("Before bcrypt.compare");
 
+const isMatch = await bcrypt.compare(password, user.password);
+
+console.log("After bcrypt.compare");
+console.log("Password Match:", isMatch);
+    
     if (!isMatch) {
       console.timeEnd("LOGIN");
       return res.json({
