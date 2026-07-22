@@ -56,61 +56,47 @@ router.post("/register", async (req, res) => {
 
 // ================= LOGIN =================
 router.post("/login", async (req, res) => {
+  console.time("LOGIN");
+
   try {
     const { staffId, password } = req.body;
 
-    console.log("Staff ID:", staffId);
-    console.log("Password:", password);
-
+    console.time("Find User");
     const user = await Staff.findOne({ staff_id: staffId });
-
-    console.log("User Found:", user);
+    console.timeEnd("Find User");
 
     if (!user) {
+      console.timeEnd("LOGIN");
       return res.json({
         status: "error",
-        message: "Invalid Staff ID or Password"
+        message: "Invalid Staff ID or Password",
       });
     }
-    console.log("Entered Password:", password);
-    console.log("Stored Password:", user.password);
 
-    console.log("Before compare");
-
-let isMatch;
-
-try {
-  isMatch = await bcrypt.compare(password, user.password);
-  console.log("After compare");
-  console.log("Password Match:", isMatch);
-} catch (e) {
-  console.error("Compare Error:", e);
-  return res.status(500).json({
-    status: "error",
-    message: "Compare failed",
-    error: e.message,
-  });
-}
-
-    console.log("Password Match:", isMatch);
+    console.time("Compare Password");
+    const isMatch = await bcrypt.compare(password, user.password);
+    console.timeEnd("Compare Password");
 
     if (!isMatch) {
+      console.timeEnd("LOGIN");
       return res.json({
         status: "error",
-        message: "Invalid Staff ID or Password"
+        message: "Invalid Staff ID or Password",
       });
     }
+
+    console.timeEnd("LOGIN");
 
     res.json({
       status: "success",
-      message: "Login Successful"
+      message: "Login Successful",
     });
-
   } catch (err) {
-    console.log(err);
+    console.error(err);
+    console.timeEnd("LOGIN");
     res.json({
       status: "error",
-      message: "Server Error"
+      message: "Server Error",
     });
   }
 });
