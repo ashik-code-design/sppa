@@ -11,30 +11,33 @@ async function insertAdmins() {
     await mongoose.connect(process.env.MONGO_URI);
     console.log("MongoDB Connected");
 
-    // Remove old admin records (optional)
+    // Remove old admin records
     await Admin.deleteMany({});
 
-    const adminPassword = await bcrypt.hash("admin123", 10);
+    // Hash password
+    const hash = await bcrypt.hash("admin123", 10);
 
+    // Insert admins
     await Admin.insertMany([
       {
         admin_id: "ADMIN001",
         password: hash,
-        role: "admin"
+        role: "admin",
       },
       {
         admin_id: "24FCS02",
         password: hash,
-        role: "staff"
-      }
+        role: "staff",
+      },
     ]);
 
     console.log("Admins Created Successfully");
 
-    mongoose.connection.close();
+    await mongoose.connection.close();
+    process.exit(0);
   } catch (err) {
     console.error(err);
-    mongoose.connection.close();
+    process.exit(1);
   }
 }
 
