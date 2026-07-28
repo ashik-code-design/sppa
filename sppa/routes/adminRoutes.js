@@ -7,8 +7,8 @@ const Staff = require("../models/Staff");
 
 
 // ================= ADMIN LOGIN =================
+// ================= ADMIN LOGIN =================
 router.post("/login", async (req, res) => {
-
     try {
 
         const { adminId, password } = req.body;
@@ -42,7 +42,11 @@ router.post("/login", async (req, res) => {
 
         res.json({
             status: "success",
-            message: "Admin Login Successful"
+            message: "Admin Login Successful",
+            admin: {
+                admin_id: admin.admin_id,
+                role: admin.role
+            }
         });
 
     } catch (err) {
@@ -55,7 +59,6 @@ router.post("/login", async (req, res) => {
         });
 
     }
-
 });
 
 
