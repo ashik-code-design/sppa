@@ -8,11 +8,6 @@ const studentSchema = new mongoose.Schema({
         unique: true
     },
 
-    student_name: {
-        type: String,
-        required: true
-    },
-
     department: {
         type: String,
         required: true
