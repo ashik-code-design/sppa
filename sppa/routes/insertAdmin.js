@@ -6,21 +6,36 @@ dotenv.config();
 
 const Admin = require("./models/Admin");
 
-mongoose.connect(process.env.MONGO_URI)
-.then(async () => {
+async function insertAdmins() {
+  try {
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log("MongoDB Connected");
 
-    const hash = await bcrypt.hash("admin123",10);
+    // Remove old admin records (optional)
+    await Admin.deleteMany({});
 
-    await Admin.create({
-        admin_id:"ADMIN001",
-        password:hash
-    });
+    const adminPassword = await bcrypt.hash("admin123", 10);
 
-    console.log("Admin Created");
+    await Admin.insertMany([
+      {
+        admin_id: "ADMIN001",
+        password: hash,
+        role: "admin"
+      },
+      {
+        admin_id: "24FCS02",
+        password: hash,
+        role: "staff"
+      }
+    ]);
 
-    process.exit();
+    console.log("Admins Created Successfully");
 
-})
-.catch(err=>{
-    console.log(err);
-});
+    mongoose.connection.close();
+  } catch (err) {
+    console.error(err);
+    mongoose.connection.close();
+  }
+}
+
+insertAdmins();
