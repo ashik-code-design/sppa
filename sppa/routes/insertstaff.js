@@ -6,10 +6,11 @@ dotenv.config();
 
 const Staff = require("./models/Staff");
 
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(async () => {
-    console.log("MongoDB Connected");
+async function insertStaff() {
+  try {
+    await mongoose.connect(process.env.MONGO_URI);
+
+    console.log("✅ MongoDB Connected");
 
     const staffs = [
       {
@@ -66,32 +67,36 @@ mongoose
       },
     ];
 
-    // Default password
+    // Default password: 12345678
     const hashedPassword = await bcrypt.hash("12345678", 10);
 
     for (const staff of staffs) {
-      const exist = await Staff.findOne({
+      const exists = await Staff.findOne({
         staff_id: staff.staff_id,
       });
 
-      if (!exist) {
-        await Staff.create({
-          staff_id: staff.staff_id,
-          staff_name: staff.staff_name,
-          password: hashedPassword,
-          password_changed: false,
-        });
-
-        console.log(`${staff.staff_id} inserted`);
-      } else {
+      if (exists) {
         console.log(`${staff.staff_id} already exists`);
+        continue;
       }
+
+      await Staff.create({
+        staff_id: staff.staff_id,
+        staff_name: staff.staff_name,
+        password: hashedPassword,
+        password_changed: false,
+      });
+
+      console.log(`${staff.staff_id} inserted`);
     }
 
-    console.log("Finished");
+    console.log("✅ Staff insertion completed.");
+  } catch (err) {
+    console.error("Error:", err);
+  } finally {
+    await mongoose.connection.close();
     process.exit(0);
-  })
-  .catch((err) => {
-    console.error(err);
-    process.exit(1);
-  });
+  }
+}
+
+insertStaff();
