@@ -3,7 +3,8 @@ const router = express.Router();
 
 const StudentAllotment = require("../models/StudentAllotment");
 
-// SAVE STUDENT ALLOTMENT
+
+// ================= SAVE STUDENT ALLOTMENT =================
 router.post("/allotStudents", async (req, res) => {
 
     try {
@@ -12,6 +13,7 @@ router.post("/allotStudents", async (req, res) => {
             department,
             section,
             subject,
+            staff_id,
             staff_name,
             roll_from,
             roll_to
@@ -21,6 +23,7 @@ router.post("/allotStudents", async (req, res) => {
             !department ||
             !section ||
             !subject ||
+            !staff_id ||
             !staff_name ||
             !roll_from ||
             !roll_to
@@ -31,18 +34,35 @@ router.post("/allotStudents", async (req, res) => {
             });
         }
 
+        // Check if this staff already has an allotment
+        const exist = await StudentAllotment.findOne({
+            staff_id: staff_id
+        });
+
+        if (exist) {
+            return res.json({
+                status: "error",
+                message: "This staff already has an allotted class."
+            });
+        }
+
         await StudentAllotment.create({
+
             department,
             section,
             subject,
+            staff_id,
             staff_name,
             roll_from,
             roll_to
+
         });
 
         res.json({
+
             status: "success",
             message: "Student Allotment Saved Successfully"
+
         });
 
     } catch (err) {
@@ -50,8 +70,171 @@ router.post("/allotStudents", async (req, res) => {
         console.log(err);
 
         res.json({
+
             status: "error",
             message: "Server Error"
+
+        });
+
+    }
+
+});
+
+
+// ================= VIEW ALL ALLOTMENTS =================
+router.get("/allotments", async (req, res) => {
+
+    try {
+
+        const allotments = await StudentAllotment.find().sort({
+            department: 1
+        });
+
+        res.json({
+
+            status: "success",
+            allotments
+
+        });
+
+    } catch (err) {
+
+        console.log(err);
+
+        res.json({
+
+            status: "error",
+            message: "Server Error"
+
+        });
+
+    }
+
+});
+
+
+// ================= GET STAFF ALLOTMENT =================
+router.get("/staff/:staffId", async (req, res) => {
+
+    try {
+
+        const allotment = await StudentAllotment.findOne({
+
+            staff_id: req.params.staffId
+
+        });
+
+        if (!allotment) {
+
+            return res.json({
+
+                status: "error",
+                message: "No Student Allotment Found"
+
+            });
+
+        }
+
+        res.json({
+
+            status: "success",
+            allotment
+
+        });
+
+    } catch (err) {
+
+        console.log(err);
+
+        res.json({
+
+            status: "error",
+            message: "Server Error"
+
+        });
+
+    }
+
+});
+
+
+// ================= UPDATE ALLOTMENT =================
+router.put("/update/:id", async (req, res) => {
+
+    try {
+
+        const {
+
+            department,
+            section,
+            subject,
+            roll_from,
+            roll_to
+
+        } = req.body;
+
+        await StudentAllotment.findByIdAndUpdate(
+
+            req.params.id,
+
+            {
+
+                department,
+                section,
+                subject,
+                roll_from,
+                roll_to
+
+            }
+
+        );
+
+        res.json({
+
+            status: "success",
+            message: "Student Allotment Updated Successfully"
+
+        });
+
+    } catch (err) {
+
+        console.log(err);
+
+        res.json({
+
+            status: "error",
+            message: "Server Error"
+
+        });
+
+    }
+
+});
+
+
+// ================= DELETE ALLOTMENT =================
+router.delete("/delete/:id", async (req, res) => {
+
+    try {
+
+        await StudentAllotment.findByIdAndDelete(req.params.id);
+
+        res.json({
+
+            status: "success",
+            message: "Student Allotment Deleted Successfully"
+
+        });
+
+    } catch (err) {
+
+        console.log(err);
+
+        res.json({
+
+            status: "error",
+            message: "Server Error"
+
         });
 
     }
