@@ -5,8 +5,6 @@ const bcrypt = require("bcryptjs");
 const Admin = require("../models/Admin");
 const Staff = require("../models/Staff");
 
-
-// ================= ADMIN LOGIN =================
 // ================= ADMIN LOGIN =================
 router.post("/login", async (req, res) => {
     try {
@@ -67,12 +65,12 @@ router.post("/addStaff", async (req, res) => {
 
     try {
 
-        const { staffId } = req.body;
+        const { staffId, staffName } = req.body;
 
-        if (!staffId) {
+        if (!staffId || !staffName) {
             return res.json({
                 status: "error",
-                message: "Staff ID is required"
+                message: "Staff ID and Staff Name are required"
             });
         }
 
@@ -91,6 +89,7 @@ router.post("/addStaff", async (req, res) => {
 
         await Staff.create({
             staff_id: staffId,
+            staff_name: staffName,
             password: hash,
             password_changed: false
         });
@@ -122,10 +121,13 @@ router.get("/staffs", async (req, res) => {
         const staffs = await Staff.find(
             {},
             {
-                password: 0,
-                __v: 0
+                staff_id: 1,
+                staff_name: 1,
+                password_changed: 1
             }
-        );
+        ).sort({
+            staff_name: 1
+        });
 
         res.json({
             status: "success",
@@ -153,10 +155,13 @@ router.put("/resetPassword/:id", async (req, res) => {
 
         const hash = await bcrypt.hash("147852", 10);
 
-        await Staff.findByIdAndUpdate(req.params.id, {
-            password: hash,
-            password_changed: false
-        });
+        await Staff.findByIdAndUpdate(
+            req.params.id,
+            {
+                password: hash,
+                password_changed: false
+            }
+        );
 
         res.json({
             status: "success",
@@ -201,22 +206,25 @@ router.delete("/deleteStaff/:id", async (req, res) => {
     }
 
 });
+
+
 // ================= UPDATE STAFF =================
 router.put("/updateStaff/:id", async (req, res) => {
 
     try {
 
-        const { staffId } = req.body;
+        const { staffId, staffName } = req.body;
 
-        if (!staffId) {
+        if (!staffId || !staffName) {
             return res.json({
                 status: "error",
-                message: "Staff ID is required"
+                message: "Staff ID and Staff Name are required"
             });
         }
 
         const exist = await Staff.findOne({
-            staff_id: staffId
+            staff_id: staffId,
+            _id: { $ne: req.params.id }
         });
 
         if (exist) {
@@ -226,9 +234,13 @@ router.put("/updateStaff/:id", async (req, res) => {
             });
         }
 
-        await Staff.findByIdAndUpdate(req.params.id, {
-            staff_id: staffId
-        });
+        await Staff.findByIdAndUpdate(
+            req.params.id,
+            {
+                staff_id: staffId,
+                staff_name: staffName
+            }
+        );
 
         res.json({
             status: "success",
