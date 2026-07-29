@@ -9,6 +9,7 @@ const markRoute = require("./routes/mark");
 const changeRoute = require("./routes/change");
 const forgetRoute = require("./routes/forget");
 const adminRoutes=require("./routes/adminRoutes");
+const allotmentRoutes = require("./routes/allotmentRoutes");
 
 dotenv.config();
 console.log("MONGO_URI:", process.env.MONGO_URI);
@@ -27,6 +28,7 @@ app.use("/sppa/mark", markRoute);
 app.use("/sppa/change", changeRoute);
 app.use("/sppa/forget", forgetRoute);
 app.use("/admin",adminRoutes);
+app.use("/allotment", allotmentRoutes);
 
 const PORT = 5000;
 app.listen(PORT, '0.0.0.0', () => {
