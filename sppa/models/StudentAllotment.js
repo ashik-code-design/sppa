@@ -22,13 +22,17 @@ const studentAllotmentSchema = new mongoose.Schema({
         required: true
     },
 
-    students: [{
-        type: String
-    }]
+    roll_from: {
+        type: String,
+        required: true
+    },
 
-}, {
-    timestamps: true
-});
+    roll_to: {
+        type: String,
+        required: true
+    }
+
+}, { timestamps: true });
 
 module.exports = mongoose.model(
     "StudentAllotment",
