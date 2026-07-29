@@ -17,6 +17,11 @@ const studentAllotmentSchema = new mongoose.Schema({
         required: true
     },
 
+    staff_id: {
+        type: String,
+        required: true
+    },
+
     staff_name: {
         type: String,
         required: true
@@ -32,7 +37,9 @@ const studentAllotmentSchema = new mongoose.Schema({
         required: true
     }
 
-}, { timestamps: true });
+}, {
+    timestamps: true
+});
 
 module.exports = mongoose.model(
     "StudentAllotment",
