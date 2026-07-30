@@ -1,6 +1,10 @@
 
 const express = require("express");
 const router = express.Router();
+router.post("/login", (req, res, next) => {
+    console.log("LOGIN ROUTE HIT");
+    next();
+});
 const bcrypt = require("bcryptjs");
 
 const Staff = require("../models/Staff");
