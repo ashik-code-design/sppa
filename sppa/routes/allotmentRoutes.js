@@ -266,18 +266,21 @@ router.post("/getStudents", async (req, res) => {
             });
         }
 
-        const from = parseInt(allotment.roll_from.match(/\d+/)[0]);
-        const to = parseInt(allotment.roll_to.match(/\d+/)[0]);
+       const rollFrom = allotment.roll_from.toUpperCase();
+const rollTo = allotment.roll_to.toUpperCase();
 
-        const prefix = allotment.roll_from.replace(/\d+/g, "");
+// Prefix = everything except the last 3 digits
+const prefix = rollFrom.substring(0, rollFrom.length - 3);
 
-        List = [];
+// Last 3 digits
+const from = parseInt(rollFrom.substring(rollFrom.length - 3));
+const to = parseInt(rollTo.substring(rollTo.length - 3));
 
-        const students = [];
+const students = [];
 
-        for (let i = from; i <= to; i++) {
-            students.push(prefix + i);
-        }
+for (let i = from; i <= to; i++) {
+    students.push(prefix + i.toString().padStart(3, "0"));
+}
 
         res.json({
             status: "success",
