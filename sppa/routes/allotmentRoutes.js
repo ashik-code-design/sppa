@@ -240,5 +240,56 @@ router.delete("/delete/:id", async (req, res) => {
     }
 
 });
+router.post("/getStudents", async (req, res) => {
+    try {
+
+        const {
+            department,
+            section,
+            subject,
+            staff_name
+        } = req.body;
+
+        const allotment = await StudentAllotment.findOne({
+            department,
+            section,
+            subject,
+            staff_name
+        });
+
+        if (!allotment) {
+            return res.json({
+                status: "error",
+                message: "No students allotted"
+            });
+        }
+
+        const from = parseInt(allotment.roll_from.match(/\d+/)[0]);
+        const to = parseInt(allotment.roll_to.match(/\d+/)[0]);
+
+        const prefix = allotment.roll_from.replace(/\d+/g, "");
+
+        List = [];
+
+        const students = [];
+
+        for (let i = from; i <= to; i++) {
+            students.push(prefix + i);
+        }
+
+        res.json({
+            status: "success",
+            students: students
+        });
+
+    } catch (err) {
+        console.log(err);
+
+        res.json({
+            status: "error",
+            message: "Server Error"
+        });
+    }
+});
 
 module.exports = router;
