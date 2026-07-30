@@ -1,132 +1,82 @@
 const express = require("express");
 const router = express.Router();
-const Staff = require("../models/Staff");
 const bcrypt = require("bcryptjs");
 
-// ================= REGISTER =================
-router.post("/register", async (req, res) => {
+const Staff = require("../models/Staff");
+
+router.post("/", async (req, res) => {
   try {
-    let { staffId, password } = req.body;
+    let { staffId, oldPassword, newPassword } = req.body;
 
     // Validation
-    if (!staffId || !password) {
-      return res.json({
+    if (!staffId || !oldPassword || !newPassword) {
+      return res.status(400).json({
         status: "error",
-        message: "Staff ID and Password are required",
+        message: "All fields are required",
       });
     }
 
     // Convert Staff ID to uppercase
     staffId = staffId.trim().toUpperCase();
 
-    // Check if user already exists
-    const existingUser = await Staff.findOne({
+    // Find staff
+    const staff = await Staff.findOne({
       staff_id: staffId,
     });
 
-    if (existingUser) {
-      return res.json({
+    console.log("Staff ID:", staffId);
+    console.log("Staff Found:", staff);
+
+    if (!staff) {
+      return res.status(404).json({
         status: "error",
-        message: "Staff ID already exists",
+        message: "Staff not found",
       });
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    console.log("Entered Old Password:", oldPassword);
+    console.log("Stored Password:", staff.password);
 
-    // Create new user
-    const newStaff = new Staff({
-      staff_id: staffId,
-      password: hashedPassword,
-      password_changed: false,
-    });
+    // Compare old password
+    const isMatch = await bcrypt.compare(oldPassword, staff.password);
 
-    await newStaff.save();
-
-    return res.json({
-      status: "success",
-      message: "Registration Successful",
-    });
-
-  } catch (error) {
-    console.error(error);
-
-    return res.json({
-      status: "error",
-      message: "Server Error",
-    });
-  }
-});
-
-
-// ================= LOGIN =================
-router.post("/login", async (req, res) => {
-  console.time("LOGIN");
-
-  try {
-    let { staffId, password } = req.body;
-
-    // Validation
-    if (!staffId || !password) {
-      console.timeEnd("LOGIN");
-
-      return res.json({
-        status: "error",
-        message: "Staff ID and Password are required",
-      });
-    }
-
-    // Convert Staff ID to uppercase
-    staffId = staffId.trim().toUpperCase();
-
-    console.time("Find User");
-
-    const user = await Staff.findOne({
-      staff_id: staffId,
-    });
-
-    console.timeEnd("Find User");
-
-    if (!user) {
-      console.timeEnd("LOGIN");
-
-      return res.json({
-        status: "error",
-        message: "Invalid Staff ID or Password",
-      });
-    }
-
-    console.log("Before bcrypt.compare");
-
-    const isMatch = await bcrypt.compare(password, user.password);
-
-    console.log("After bcrypt.compare");
     console.log("Password Match:", isMatch);
 
     if (!isMatch) {
-      console.timeEnd("LOGIN");
-
-      return res.json({
+      return res.status(400).json({
         status: "error",
-        message: "Invalid Staff ID or Password",
+        message: "Old password is incorrect",
       });
     }
 
-    console.timeEnd("LOGIN");
+    // Check if new password is same as old password
+    const samePassword = await bcrypt.compare(newPassword, staff.password);
+
+    if (samePassword) {
+      return res.status(400).json({
+        status: "error",
+        message: "New password must be different from old password",
+      });
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update password
+    staff.password = hashedPassword;
+    staff.password_changed = true;
+
+    await staff.save();
 
     return res.json({
       status: "success",
-      message: "Login Successful",
-      staffId: user.staff_id,
-      password_changed: user.password_changed,
+      message: "Password changed successfully",
     });
 
   } catch (err) {
     console.error(err);
 
-    console.timeEnd("LOGIN");
-
-    return res.json({
+    return res.status(500).json({
       status: "error",
       message: "Server Error",
     });
