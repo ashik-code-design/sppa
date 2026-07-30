@@ -1,9 +1,10 @@
 
 const express = require("express");
 const router = express.Router();
-router.post("/login", (req, res, next) => {
-    console.log("LOGIN ROUTE HIT");
-    next();
+router.get("/version", (req, res) => {
+  res.json({
+    message: "New authroutes.js is deployed"
+  });
 });
 const bcrypt = require("bcryptjs");
 
