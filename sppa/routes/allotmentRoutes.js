@@ -249,6 +249,7 @@ router.post("/getStudents", async (req, res) => {
             subject,
             staff_name
         } = req.body;
+        console.log("Request Body:", req.body);
 
         const allotment = await StudentAllotment.findOne({
             department,
@@ -256,6 +257,7 @@ router.post("/getStudents", async (req, res) => {
             subject,
             staff_name
         });
+          console.log("Found:", allotment);
 
         if (!allotment) {
             return res.json({
