@@ -27,7 +27,7 @@ app.use("/sppa/marks", markRoutes);
 app.use("/sppa/mark", markRoute);
 app.use("/sppa/change", changeRoute);
 app.use("/sppa/forget", forgetRoute);
-app.use("/admin",adminRoutes);
+app.use("/sppa/admin",adminRoutes);
 app.use("/allotment", allotmentRoutes);
 
 const PORT = 5000;
