@@ -180,6 +180,57 @@ router.put("/resetPassword/:id", async (req, res) => {
     }
 
 });
+// ================= CHANGE PASSWORD =================
+router.put("/changePassword", async (req, res) => {
+
+    try {
+
+        let { staffId, newPassword } = req.body;
+
+        if (!staffId || !newPassword) {
+            return res.json({
+                status: "error",
+                message: "Staff ID and New Password are required"
+            });
+        }
+
+        staffId = staffId.trim().toUpperCase();
+
+        const staff = await Staff.findOne({
+            staff_id: staffId
+        });
+
+        if (!staff) {
+            return res.json({
+                status: "error",
+                message: "Invalid Staff ID"
+            });
+        }
+
+        const hash = await bcrypt.hash(newPassword, 10);
+
+        staff.password = hash;
+        staff.password_changed = true;
+
+        await staff.save();
+
+        res.json({
+            status: "success",
+            message: "Password Changed Successfully"
+        });
+
+    } catch (err) {
+
+        console.log(err);
+
+        res.json({
+            status: "error",
+            message: "Server Error"
+        });
+
+    }
+
+});
 
 
 // ================= DELETE STAFF =================
