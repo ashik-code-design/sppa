@@ -29,7 +29,10 @@ router.post("/login", async (req, res) => {
             });
         }
 
-        const match = await bcrypt.compare(password, admin.password);
+        const match = await bcrypt.compare(
+            password,
+            admin.password
+        );
 
         if (!match) {
             return res.json({
@@ -146,9 +149,7 @@ router.get("/staffs", async (req, res) => {
     }
 
 });
-
-
-// ================= RESET PASSWORD =================
+// ================= RESET STAFF PASSWORD =================
 router.put("/resetPassword/:id", async (req, res) => {
 
     try {
@@ -180,63 +181,14 @@ router.put("/resetPassword/:id", async (req, res) => {
     }
 
 });
-// ================= CHANGE PASSWORD =================
-router.put("/changePassword", async (req, res) => {
 
-    try {
 
-        let { staffId, newPassword } = req.body;
-
-        if (!staffId || !newPassword) {
-            return res.json({
-                status: "error",
-                message: "Staff ID and New Password are required"
-            });
-        }
-
-        staffId = staffId.trim().toUpperCase();
-
-        const staff = await Staff.findOne({
-            staff_id: staffId
-        });
-
-        if (!staff) {
-            return res.json({
-                status: "error",
-                message: "Invalid Staff ID"
-            });
-        }
-
-        const hash = await bcrypt.hash(newPassword, 10);
-
-        staff.password = hash;
-        staff.password_changed = true;
-
-        await staff.save();
-
-        res.json({
-            status: "success",
-            message: "Password Changed Successfully"
-        });
-
-    } catch (err) {
-
-        console.log(err);
-
-        res.json({
-            status: "error",
-            message: "Server Error"
-        });
-
-    }
-
-});
 // ================= ADMIN CHANGE PASSWORD =================
 router.put("/changePassword", async (req, res) => {
 
     try {
 
-        let { adminId, oldPassword, newPassword } = req.body;
+        const { adminId, oldPassword, newPassword } = req.body;
 
         if (!adminId || !oldPassword || !newPassword) {
             return res.json({
@@ -245,10 +197,8 @@ router.put("/changePassword", async (req, res) => {
             });
         }
 
-        adminId = adminId.trim();
-
         const admin = await Admin.findOne({
-            admin_id: adminId
+            admin_id: adminId.trim()
         });
 
         if (!admin) {
@@ -319,8 +269,6 @@ router.delete("/deleteStaff/:id", async (req, res) => {
     }
 
 });
-
-
 // ================= UPDATE STAFF =================
 router.put("/updateStaff/:id", async (req, res) => {
 
