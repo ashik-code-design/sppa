@@ -231,6 +231,68 @@ router.put("/changePassword", async (req, res) => {
     }
 
 });
+// ================= ADMIN CHANGE PASSWORD =================
+router.put("/changePassword", async (req, res) => {
+
+    try {
+
+        let { adminId, oldPassword, newPassword } = req.body;
+
+        if (!adminId || !oldPassword || !newPassword) {
+            return res.json({
+                status: "error",
+                message: "All fields are required"
+            });
+        }
+
+        adminId = adminId.trim();
+
+        const admin = await Admin.findOne({
+            admin_id: adminId
+        });
+
+        if (!admin) {
+            return res.json({
+                status: "error",
+                message: "Invalid Admin ID"
+            });
+        }
+
+        const match = await bcrypt.compare(
+            oldPassword,
+            admin.password
+        );
+
+        if (!match) {
+            return res.json({
+                status: "error",
+                message: "Old Password is incorrect"
+            });
+        }
+
+        const hash = await bcrypt.hash(newPassword, 10);
+
+        admin.password = hash;
+
+        await admin.save();
+
+        res.json({
+            status: "success",
+            message: "Password Changed Successfully"
+        });
+
+    } catch (err) {
+
+        console.log(err);
+
+        res.json({
+            status: "error",
+            message: "Server Error"
+        });
+
+    }
+
+});
 
 
 // ================= DELETE STAFF =================
