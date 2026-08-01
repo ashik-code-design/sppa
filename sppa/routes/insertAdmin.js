@@ -22,11 +22,13 @@ async function insertAdmins() {
       {
         admin_id: "ADMIN001",
         password: hash,
+        name:"admin1",
         role: "admin",
       },
       {
         admin_id: "24FCS02",
         password: hash,
+        name:"admin2",
         role: "staff",
       },
     ]);
