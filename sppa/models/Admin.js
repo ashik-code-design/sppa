@@ -9,7 +9,7 @@ const adminSchema = new mongoose.Schema({
     uppercase: true,
   },
 
-  email: {
+  admin_name: {
     type: String,
     trim: true,
   },
