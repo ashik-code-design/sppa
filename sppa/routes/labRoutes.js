@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const Lab = require("../models/Lab");
+const Lab = require("../models/lab");
 
 // ================= ADD LAB =================
 // POST /lab/addLab
