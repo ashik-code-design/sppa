@@ -6,14 +6,14 @@ const Staff = require("../models/Staff");
 const Admin = require("../models/Admin");
 
 // POST /sppa/forget
-// body: { id, email, newPassword, role }  where role is 'staff' or 'admin'
+// body: { id, name, newPassword, role }  where role is 'staff' or 'admin'
 router.post("/", async (req, res) => {
   try {
-    const { id, email, newPassword, role } = req.body;
+    const { id, name, newPassword, role } = req.body;
 
     if (
       !id?.trim() ||
-      !email?.trim() ||
+      !name?.trim() ||
       !newPassword?.trim() ||
       !role?.trim()
     ) {
@@ -28,19 +28,19 @@ router.post("/", async (req, res) => {
     if (role === "admin") {
       user = await Admin.findOne({
         admin_id: id.trim().toUpperCase(),
-        email: email.trim(),
+        admin_name: name.trim(),
       });
     } else {
       user = await Staff.findOne({
         staff_id: id.trim(),
-        email: email.trim(),
+        staff_name: name.trim(),
       });
     }
 
     if (!user) {
       return res.json({
         status: "error",
-        message: `Invalid ${role === "admin" ? "Admin ID" : "Staff ID"} or Email`,
+        message: `Invalid ${role === "admin" ? "Admin ID" : "Staff ID"} or Name`,
       });
     }
 
