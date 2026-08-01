@@ -1,17 +1,21 @@
 const express = require("express");
 const router = express.Router();
+const bcrypt = require("bcryptjs");
+
 const Staff = require("../models/Staff");
+const Admin = require("../models/Admin");
 
 // POST /sppa/forget
+// body: { id, email, newPassword, role }  where role is 'staff' or 'admin'
 router.post("/", async (req, res) => {
   try {
-    const { staffId, email, newPassword } = req.body;
+    const { id, email, newPassword, role } = req.body;
 
-    // Check required fields
     if (
-      !staffId?.trim() ||
+      !id?.trim() ||
       !email?.trim() ||
-      !newPassword?.trim()
+      !newPassword?.trim() ||
+      !role?.trim()
     ) {
       return res.json({
         status: "error",
@@ -19,24 +23,37 @@ router.post("/", async (req, res) => {
       });
     }
 
-    // Find staff by staff ID and email
-    const staff = await Staff.findOne({
-      staff_id: staffId,
-      email: email,
-    });
+    let user;
 
-    if (!staff) {
-      return res.json({
-        status: "error",
-        message: "Invalid Staff ID or Email",
+    if (role === "admin") {
+      user = await Admin.findOne({
+        admin_id: id.trim().toUpperCase(),
+        email: email.trim(),
+      });
+    } else {
+      user = await Staff.findOne({
+        staff_id: id.trim(),
+        email: email.trim(),
       });
     }
 
-    // Update password
-    staff.password = newPassword;
-    staff.password_changed = 1;
+    if (!user) {
+      return res.json({
+        status: "error",
+        message: `Invalid ${role === "admin" ? "Admin ID" : "Staff ID"} or Email`,
+      });
+    }
 
-    await staff.save();
+    const hash = await bcrypt.hash(newPassword, 10);
+    user.password = hash;
+
+    // Staff has a password_changed flag used elsewhere (e.g. resetPassword route);
+    // Admin has no such field, so only set it for staff.
+    if (role !== "admin") {
+      user.password_changed = 1;
+    }
+
+    await user.save();
 
     return res.json({
       status: "success",
