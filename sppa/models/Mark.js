@@ -2,103 +2,119 @@ const express = require("express");
 const router = express.Router();
 const Mark = require("../models/Mark");
 
-// Expected mount: app.use("/mark", markRoutes)  ->  POST /mark/gmark
-router.post("/gmark", async (req, res) => {
+// Called by experiment1.dart -> submitMarks()
+// Expected mount: app.use("/sppa", markInsertRouter)  ->  POST /sppa/mark
+router.post("/mark", async (req, res) => {
   try {
-    const { department, section, lab, experiment } = req.body;
+    const { marks } = req.body;
 
-    if (!department || !section) {
-      return res.json([]);
+    if (!Array.isArray(marks) || marks.length === 0) {
+      return res.json({
+        status: "error",
+        message: "No marks provided",
+      });
     }
 
-    // ============================
-    // PARTICULAR EXPERIMENT (lab + experiment given)
-    // ============================
-    if (lab && experiment) {
-      const marks = await Mark.find({
+    for (const m of marks) {
+      const {
+        register_number,
         department,
         section,
         lab,
         experiment,
-      })
-        .select("register_number preparation output total -_id")
-        .sort({ register_number: 1 });
+        preparation,
+        output,
+        total,
+        staff_id,
+      } = m;
 
-      return res.json(marks);
+      if (
+        !register_number ||
+        !department ||
+        !section ||
+        !lab ||
+        !experiment
+      ) {
+        continue;
+      }
+
+      await Mark.findOneAndUpdate(
+        { register_number, department, section, lab, experiment },
+        {
+          preparation,
+          output,
+          total,
+          ...(staff_id ? { staff_id } : {}),
+        },
+        { upsert: true, new: true, setDefaultsOnInsert: true }
+      );
     }
-
-    // ============================
-    // ALL EXPERIMENTS IN ONE LAB (lab given, no experiment)
-    // ============================
-    if (lab) {
-      const marks = await Mark.find({
-        department,
-        section,
-        lab,
-      })
-        .select("register_number experiment total -_id")
-        .sort({ register_number: 1 });
-
-      let data = {};
-      let experimentMap = {};
-
-      marks.forEach((row) => {
-        const reg = row.register_number;
-
-        if (!data[reg]) {
-          data[reg] = {
-            register_number: reg,
-            exp1: 0,
-            exp2: 0,
-            exp3: 0,
-            exp4: 0,
-            exp5: 0,
-            exp6: 0,
-            exp7: 0,
-            exp8: 0,
-            exp9: 0,
-            exp10: 0,
-            grand_total: 0,
-          };
-        }
-
-        // Map experiment name -> exp1, exp2 ...
-        if (!experimentMap[row.experiment]) {
-          experimentMap[row.experiment] =
-            Object.keys(experimentMap).length + 1;
-        }
-
-        const expNo = experimentMap[row.experiment];
-
-        if (expNo <= 10) {
-          data[reg]["exp" + expNo] = row.total;
-        }
-
-        data[reg].grand_total += row.total;
-      });
-
-      return res.json(Object.values(data));
-    }
-
-    // ============================
-    // ALL LABS, ALL EXPERIMENTS (no lab, no experiment given)
-    // Section-wide flat list, used by experiment1.dart ->
-    // downloadAllExperimentsPdf() for the "All Experiments" PDF.
-    // ============================
-    const marks = await Mark.find({
-      department,
-      section,
-    })
-      .select("register_number lab experiment total -_id")
-      .sort({ register_number: 1 });
 
     return res.json({
       status: "success",
-      marks,
+      message: "Marks saved successfully",
     });
   } catch (error) {
     console.error(error);
-    res.json([]);
+    return res.json({
+      status: "error",
+      message: "Something went wrong while saving marks",
+    });
+  }
+});
+
+// Called by details.dart -> updateMark()
+// Expected mount: same router as above -> POST /sppa/mark/umark
+router.post("/mark/umark", async (req, res) => {
+  try {
+    const {
+      department,
+      section,
+      lab,
+      experiment,
+      register_number,
+      preparation,
+      output,
+      total,
+    } = req.body;
+
+    if (
+      !department ||
+      !section ||
+      !lab ||
+      !experiment ||
+      !register_number
+    ) {
+      return res.status(400).json({
+        status: "error",
+        message: "Missing required fields",
+      });
+    }
+
+    const updated = await Mark.findOneAndUpdate(
+      { department, section, lab, experiment, register_number },
+      { preparation, output, total },
+      { new: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({
+        status: "error",
+        message: "Mark record not found",
+      });
+    }
+
+    return res.json({
+      status: "success",
+      message: "Marks updated successfully",
+      mark: updated,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      status: "error",
+      message: "Something went wrong while updating marks",
+    });
   }
 });
 
