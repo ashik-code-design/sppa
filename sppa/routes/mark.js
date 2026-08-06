@@ -31,6 +31,7 @@ router.post("/", async (req, res) => {
             preparation: mark.preparation,
             output: mark.output,
             total: mark.total,
+            date: mark.date,
           },
         },
         {
@@ -68,7 +69,21 @@ router.post("/umark", async (req, res) => {
       preparation,
       output,
       total,
+      date,
     } = req.body;
+
+    const updateFields = {
+      preparation,
+      output,
+      total,
+    };
+
+    // Only touch the stored date if the caller actually sent one, so
+    // existing dates aren't wiped out by callers (like the current
+    // edit dialog) that don't send this field yet.
+    if (date !== undefined) {
+      updateFields.date = date;
+    }
 
     const result = await Mark.findOneAndUpdate(
       {
@@ -79,11 +94,7 @@ router.post("/umark", async (req, res) => {
         experiment,
       },
       {
-        $set: {
-          preparation,
-          output,
-          total,
-        },
+        $set: updateFields,
       },
       {
         new: true,
