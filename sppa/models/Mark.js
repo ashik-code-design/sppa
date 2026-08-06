@@ -34,6 +34,10 @@ const markSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    date: {
+      type: String,
+      default: "",
+    },
     staff_id: {
       type: String,
       default: "",
