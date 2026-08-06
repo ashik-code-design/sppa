@@ -1,121 +1,59 @@
-const express = require("express");
-const router = express.Router();
-const Mark = require("../models/Mark");
+const mongoose = require("mongoose");
 
-// Called by experiment1.dart -> submitMarks()
-// Expected mount: app.use("/sppa", markInsertRouter)  ->  POST /sppa/mark
-router.post("/mark", async (req, res) => {
-  try {
-    const { marks } = req.body;
-
-    if (!Array.isArray(marks) || marks.length === 0) {
-      return res.json({
-        status: "error",
-        message: "No marks provided",
-      });
-    }
-
-    for (const m of marks) {
-      const {
-        register_number,
-        department,
-        section,
-        lab,
-        experiment,
-        preparation,
-        output,
-        total,
-        staff_id,
-      } = m;
-
-      if (
-        !register_number ||
-        !department ||
-        !section ||
-        !lab ||
-        !experiment
-      ) {
-        continue;
-      }
-
-      await Mark.findOneAndUpdate(
-        { register_number, department, section, lab, experiment },
-        {
-          preparation,
-          output,
-          total,
-          ...(staff_id ? { staff_id } : {}),
-        },
-        { upsert: true, new: true, setDefaultsOnInsert: true }
-      );
-    }
-
-    return res.json({
-      status: "success",
-      message: "Marks saved successfully",
-    });
-  } catch (error) {
-    console.error(error);
-    return res.json({
-      status: "error",
-      message: "Something went wrong while saving marks",
-    });
+const markSchema = new mongoose.Schema(
+  {
+    register_number: {
+      type: String,
+      required: true,
+    },
+    department: {
+      type: String,
+      required: true,
+    },
+    section: {
+      type: String,
+      required: true,
+    },
+    lab: {
+      type: String,
+      required: true,
+    },
+    experiment: {
+      type: String,
+      required: true,
+    },
+    preparation: {
+      type: Number,
+      default: 0,
+    },
+    output: {
+      type: Number,
+      default: 0,
+    },
+    total: {
+      type: Number,
+      default: 0,
+    },
+    staff_id: {
+      type: String,
+      default: "",
+    },
+  },
+  {
+    timestamps: true,
   }
-});
+);
 
-// Called by details.dart -> updateMark()
-// Expected mount: same router as above -> POST /sppa/mark/umark
-router.post("/mark/umark", async (req, res) => {
-  try {
-    const {
-      department,
-      section,
-      lab,
-      experiment,
-      register_number,
-      preparation,
-      output,
-      total,
-    } = req.body;
+// Prevent duplicate records for the same student & experiment
+markSchema.index(
+  {
+    register_number: 1,
+    department: 1,
+    section: 1,
+    lab: 1,
+    experiment: 1,
+  },
+  { unique: true }
+);
 
-    if (
-      !department ||
-      !section ||
-      !lab ||
-      !experiment ||
-      !register_number
-    ) {
-      return res.status(400).json({
-        status: "error",
-        message: "Missing required fields",
-      });
-    }
-
-    const updated = await Mark.findOneAndUpdate(
-      { department, section, lab, experiment, register_number },
-      { preparation, output, total },
-      { new: true }
-    );
-
-    if (!updated) {
-      return res.status(404).json({
-        status: "error",
-        message: "Mark record not found",
-      });
-    }
-
-    return res.json({
-      status: "success",
-      message: "Marks updated successfully",
-      mark: updated,
-    });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({
-      status: "error",
-      message: "Something went wrong while updating marks",
-    });
-  }
-});
-
-module.exports = router;
+module.exports = mongoose.model("Mark", markSchema);
