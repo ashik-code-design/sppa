@@ -1,52 +1,105 @@
-const mongoose = require("mongoose");
+const express = require("express");
+const router = express.Router();
+const Mark = require("../models/Mark");
 
-const markSchema = new mongoose.Schema({
-  register_number: {
-    type: String,
-    required: true
-  },
-  department: {
-    type: String,
-    required: true
-  },
-  section: {
-    type: String,
-    required: true
-  },
-  lab: {
-    type: String,
-    required: true
-  },
-  experiment: {
-    type: String,
-    required: true
-  },
-  preparation: {
-    type: Number,
-    default: 0
-  },
-  output: {
-    type: Number,
-    default: 0
-  },
-  total: {
-    type: Number,
-    default: 0
-  },
-  staff_id: {
-    type: String
+// Expected mount: app.use("/mark", markRoutes)  ->  POST /mark/gmark
+router.post("/gmark", async (req, res) => {
+  try {
+    const { department, section, lab, experiment } = req.body;
+
+    if (!department || !section) {
+      return res.json([]);
+    }
+
+    // ============================
+    // PARTICULAR EXPERIMENT (lab + experiment given)
+    // ============================
+    if (lab && experiment) {
+      const marks = await Mark.find({
+        department,
+        section,
+        lab,
+        experiment,
+      })
+        .select("register_number preparation output total -_id")
+        .sort({ register_number: 1 });
+
+      return res.json(marks);
+    }
+
+    // ============================
+    // ALL EXPERIMENTS IN ONE LAB (lab given, no experiment)
+    // ============================
+    if (lab) {
+      const marks = await Mark.find({
+        department,
+        section,
+        lab,
+      })
+        .select("register_number experiment total -_id")
+        .sort({ register_number: 1 });
+
+      let data = {};
+      let experimentMap = {};
+
+      marks.forEach((row) => {
+        const reg = row.register_number;
+
+        if (!data[reg]) {
+          data[reg] = {
+            register_number: reg,
+            exp1: 0,
+            exp2: 0,
+            exp3: 0,
+            exp4: 0,
+            exp5: 0,
+            exp6: 0,
+            exp7: 0,
+            exp8: 0,
+            exp9: 0,
+            exp10: 0,
+            grand_total: 0,
+          };
+        }
+
+        // Map experiment name -> exp1, exp2 ...
+        if (!experimentMap[row.experiment]) {
+          experimentMap[row.experiment] =
+            Object.keys(experimentMap).length + 1;
+        }
+
+        const expNo = experimentMap[row.experiment];
+
+        if (expNo <= 10) {
+          data[reg]["exp" + expNo] = row.total;
+        }
+
+        data[reg].grand_total += row.total;
+      });
+
+      return res.json(Object.values(data));
+    }
+
+    // ============================
+    // ALL LABS, ALL EXPERIMENTS (no lab, no experiment given)
+    // Section-wide flat list, used by experiment1.dart ->
+    // downloadAllExperimentsPdf() for the "All Experiments" PDF.
+    // ============================
+    const marks = await Mark.find({
+      department,
+      section,
+    })
+      .select("register_number lab experiment total -_id")
+      .sort({ register_number: 1 });
+
+    return res.json({
+      status: "success",
+      marks,
+    });
+  } catch (error) {
+    console.error(error);
+    res.json([]);
   }
-}, { timestamps: { createdAt: "created_at", updatedAt: false } });
-markSchema.index(
-  {
-    register_number: 1,
-    department: 1,
-    section: 1,
-    lab: 1,
-    experiment: 1
-  },
-  { unique: true }
-);
+});
 
-
-module.exports = mongoose.model("Mark", markSchema);
+module.exports = router;
