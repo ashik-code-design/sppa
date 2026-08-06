@@ -21,7 +21,7 @@ router.post("/gmark", async (req, res) => {
         lab,
         experiment,
       })
-        .select("register_number preparation output total -_id")
+        .select("register_number preparation output total date -_id")
         .sort({ register_number: 1 });
 
       return res.json(marks);
