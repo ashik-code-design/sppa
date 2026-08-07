@@ -36,7 +36,9 @@ router.post("/gmark", async (req, res) => {
         section,
         lab,
       })
-        .select("register_number experiment total -_id")
+        // "date" is now selected so each pivoted exp1..exp10 value can
+        // carry the date it was entered on.
+        .select("register_number experiment total date -_id")
         .sort({ register_number: 1 });
 
       let data = {};
@@ -49,15 +51,25 @@ router.post("/gmark", async (req, res) => {
           data[reg] = {
             register_number: reg,
             exp1: 0,
+            exp1_date: "",
             exp2: 0,
+            exp2_date: "",
             exp3: 0,
+            exp3_date: "",
             exp4: 0,
+            exp4_date: "",
             exp5: 0,
+            exp5_date: "",
             exp6: 0,
+            exp6_date: "",
             exp7: 0,
+            exp7_date: "",
             exp8: 0,
+            exp8_date: "",
             exp9: 0,
+            exp9_date: "",
             exp10: 0,
+            exp10_date: "",
             grand_total: 0,
           };
         }
@@ -72,6 +84,7 @@ router.post("/gmark", async (req, res) => {
 
         if (expNo <= 10) {
           data[reg]["exp" + expNo] = row.total;
+          data[reg]["exp" + expNo + "_date"] = row.date || "";
         }
 
         data[reg].grand_total += row.total;
