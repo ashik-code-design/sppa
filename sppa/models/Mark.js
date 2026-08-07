@@ -22,16 +22,18 @@ const markSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    // Mixed instead of Number: a mark can now be a numeric score (0-5,
+    // 0-10) OR the status string "A" (Absent) / "L" (Left).
     preparation: {
-      type: Number,
+      type: mongoose.Schema.Types.Mixed,
       default: 0,
     },
     output: {
-      type: Number,
+      type: mongoose.Schema.Types.Mixed,
       default: 0,
     },
     total: {
-      type: Number,
+      type: mongoose.Schema.Types.Mixed,
       default: 0,
     },
     date: {
