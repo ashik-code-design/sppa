@@ -87,7 +87,11 @@ router.post("/gmark", async (req, res) => {
           data[reg]["exp" + expNo + "_date"] = row.date || "";
         }
 
-        data[reg].grand_total += row.total;
+        // "A" (Absent) / "L" (Left) marks don't count toward the
+        // grand total - only add when the total is actually numeric.
+        if (typeof row.total === "number") {
+          data[reg].grand_total += row.total;
+        }
       });
 
       return res.json(Object.values(data));
