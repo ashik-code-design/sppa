@@ -88,7 +88,7 @@ router.post("/addStaff", async (req, res) => {
             });
         }
 
-        const hash = await bcrypt.hash("147852", 10);
+        const hash = await bcrypt.hash("12345678", 10);
 
         await Staff.create({
             staff_id: staffId,
