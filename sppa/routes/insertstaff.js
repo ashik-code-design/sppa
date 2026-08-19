@@ -63,7 +63,7 @@ async function insertStaff() {
       },
       {
         staff_id: "26SCS01",
-        staff_name: "Mr. A. Shreenath",
+        staff_name: "Mr. A. SHREENATH",
       },
     ];
 
