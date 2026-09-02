@@ -35,6 +35,13 @@ router.post("/gmark", async (req, res) => {
         department,
         section,
         lab,
+        // Mid Sem / End Sem are saved under the same "lab" value as
+        // regular experiments (they're just extra options on the
+        // experiment dropdown), so they must be excluded here or
+        // their out-of-30 totals silently bleed into grand_total
+        // below, inflating it and causing the combined Total (100)
+        // on the Flutter side to double-count them.
+        experiment: { $nin: ["Mid Sem", "End Sem"] },
       })
         // "date" is now selected so each pivoted exp1..exp10 value can
         // carry the date it was entered on.
