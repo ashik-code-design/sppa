@@ -31,6 +31,17 @@ const studentAllotmentSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+
+    // Roll numbers within [roll_from, roll_to] that should NOT be
+    // allotted (e.g. students who left). Stored as raw entries the way
+    // the admin typed them — either bare digits ("114") or a full
+    // register number ("24UCS114"). Normalized/matched at read time in
+    // the /getStudents route, against whichever prefix that allotment's
+    // roll_from uses.
+    excluded_rolls: {
+      type: [String],
+      default: [],
+    },
   },
   {
     timestamps: true,
