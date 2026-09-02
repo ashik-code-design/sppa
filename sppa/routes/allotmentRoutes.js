@@ -21,6 +21,11 @@ function normalizeRoll(raw, prefix) {
 
 
 // ================= SAVE STUDENT ALLOTMENT =================
+// Upsert: if this staff already has an allotment, it is REPLACED with
+// the newly submitted department/section/subject/roll_from/roll_to/
+// excluded_rolls, instead of rejecting the request. This lets the
+// "ALLOT STUDENTS" form double as an "edit allotment" screen — e.g.
+// adding excluded_rolls for students who left, after the fact.
 router.post("/allotStudents", async (req, res) => {
 
     try {
@@ -51,35 +56,30 @@ router.post("/allotStudents", async (req, res) => {
             });
         }
 
-        // Check if this staff already has an allotment
-        const exist = await StudentAllotment.findOne({
-            staff_id: staff_id
-        });
-
-        if (exist) {
-            return res.json({
-                status: "error",
-                message: "This staff already has an allotted class."
-            });
-        }
-
-        await StudentAllotment.create({
-
-            department,
-            section,
-            subject,
-            staff_id,
-            staff_name,
-            roll_from,
-            roll_to,
-            excluded_rolls: Array.isArray(excluded_rolls) ? excluded_rolls : []
-
-        });
+        const result = await StudentAllotment.findOneAndUpdate(
+            { staff_id: staff_id },
+            {
+                department,
+                section,
+                subject,
+                staff_id,
+                staff_name,
+                roll_from,
+                roll_to,
+                excluded_rolls: Array.isArray(excluded_rolls) ? excluded_rolls : []
+            },
+            {
+                upsert: true,
+                new: true,
+                setDefaultsOnInsert: true
+            }
+        );
 
         res.json({
 
             status: "success",
-            message: "Student Allotment Saved Successfully"
+            message: "Student Allotment Saved Successfully",
+            allotment: result
 
         });
 
