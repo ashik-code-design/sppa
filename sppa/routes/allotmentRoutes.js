@@ -4,6 +4,22 @@ const router = express.Router();
 const StudentAllotment = require("../models/StudentAllotment");
 
 
+// Normalizes one excluded-roll entry against the same prefix/padding
+// convention used to build roll_from/roll_to into full register
+// numbers: plain digits ("114") get the prefix prepended and padded
+// to 3 digits ("24UCS114"); anything else is just uppercased as-is,
+// in case the admin already typed the full register number.
+function normalizeRoll(raw, prefix) {
+    const val = raw.toString().trim().toUpperCase();
+
+    if (/^\d+$/.test(val)) {
+        return prefix + val.padStart(3, "0");
+    }
+
+    return val;
+}
+
+
 // ================= SAVE STUDENT ALLOTMENT =================
 router.post("/allotStudents", async (req, res) => {
 
@@ -16,7 +32,8 @@ router.post("/allotStudents", async (req, res) => {
             staff_id,
             staff_name,
             roll_from,
-            roll_to
+            roll_to,
+            excluded_rolls
         } = req.body;
 
         if (
@@ -54,7 +71,8 @@ router.post("/allotStudents", async (req, res) => {
             staff_id,
             staff_name,
             roll_from,
-            roll_to
+            roll_to,
+            excluded_rolls: Array.isArray(excluded_rolls) ? excluded_rolls : []
 
         });
 
@@ -169,7 +187,8 @@ router.put("/update/:id", async (req, res) => {
             section,
             subject,
             roll_from,
-            roll_to
+            roll_to,
+            excluded_rolls
 
         } = req.body;
 
@@ -183,7 +202,8 @@ router.put("/update/:id", async (req, res) => {
                 section,
                 subject,
                 roll_from,
-                roll_to
+                roll_to,
+                excluded_rolls: Array.isArray(excluded_rolls) ? excluded_rolls : []
 
             }
 
@@ -257,7 +277,7 @@ router.post("/getStudents", async (req, res) => {
             subject,
             staff_name
         });
-          console.log("Found:", allotment);
+        console.log("Found:", allotment);
 
         if (!allotment) {
             return res.json({
@@ -266,7 +286,7 @@ router.post("/getStudents", async (req, res) => {
             });
         }
 
-       const rollFrom = allotment.roll_from.toUpperCase();
+        const rollFrom = allotment.roll_from.toUpperCase();
 const rollTo = allotment.roll_to.toUpperCase();
 
 // Prefix = everything except the last 3 digits
@@ -276,10 +296,21 @@ const prefix = rollFrom.substring(0, rollFrom.length - 3);
 const from = parseInt(rollFrom.substring(rollFrom.length - 3));
 const to = parseInt(rollTo.substring(rollTo.length - 3));
 
+// Excluded roll numbers (students who left) get normalized against
+// the same prefix so "114" matches the generated "PREFIX114", then
+// skipped while building the range below instead of ever being added.
+const excludedSet = new Set(
+    (allotment.excluded_rolls || []).map((r) => normalizeRoll(r, prefix))
+);
+
 const students = [];
 
 for (let i = from; i <= to; i++) {
-    students.push(prefix + i.toString().padStart(3, "0"));
+    const reg = prefix + i.toString().padStart(3, "0");
+
+    if (!excludedSet.has(reg)) {
+        students.push(reg);
+    }
 }
 
         res.json({
